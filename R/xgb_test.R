@@ -24,38 +24,8 @@ rf_exp <- function(x_train, y_train, x_test, y_test) {
 
   # random forest returns a factor. that's cool and all, but
   # I just want the raw preditions.
-  predict(rf, x_test) %>%
-    as.character %>%
-    as.numeric
+  predict(rf, x_test, type="prob")
 }
-
-xgb_exp <- function(x_train, y_train, x_test, y_test) {
-  dim(x_train) <- c(nrow(x_train), 784)
-  dim(x_test) <- c(nrow(x_test), 784)
-
-  x_train <- x_train / 255
-  x_test <- x_test / 255
-
-  dtrain <- xgb.DMatrix(x_train, label = y_train)
-  dtest <- xgb.DMatrix(x_test, label = y_test)
-  train.gdbt<-xgb.train(params=list(objective="multi:softmax",
-                                    num_class=10, eval_metric="mlogloss",
-                                    eta=0.2, max_depth=5,
-                                    subsample=1, colsample_bytree=0.5),
-                        data=dtrain,
-                        nrounds=150)
-
-  predict(train.gdbt, newdata = dtest)
-
-}
-
-# roc.multi <- multiclass.roc(pred, mnist$test$y)
-# rs <- roc.multi[['rocs']]
-# ggroc(rs)
-
-####
-# keras DNN
-####
 
 dnn_exp <- function(x_train, y_train, x_test, y_test) {
   # reshape
@@ -89,7 +59,7 @@ dnn_exp <- function(x_train, y_train, x_test, y_test) {
     verbose=0
   )
 
-  model %>% predict_classes(x_test)
+  model %>% predict_proba(x_test)
 }
 
 cnn_exp <- function(x_train, y_train, x_test, y_test) {
@@ -145,7 +115,29 @@ cnn_exp <- function(x_train, y_train, x_test, y_test) {
     verbose=0
   )
 
-  model %>% predict_classes(x_test)
+  model %>% predict_proba(x_test)
+}
+
+xgb_exp <- function(x_train, y_train, x_test, y_test) {
+  dim(x_train) <- c(nrow(x_train), 784)
+  dim(x_test) <- c(nrow(x_test), 784)
+
+  x_train <- x_train / 255
+  x_test <- x_test / 255
+
+  dtrain <- xgb.DMatrix(x_train, label = y_train)
+  dtest <- xgb.DMatrix(x_test, label = y_test)
+  train.gdbt<-xgb.train(params=list(objective="multi:softprob",
+                                    num_class=10, eval_metric="mlogloss",
+                                    eta=0.2, max_depth=5,
+                                    subsample=1, colsample_bytree=0.5),
+                        data=dtrain,
+                        nrounds=150)
+
+  p<-predict(train.gdbt, newdata = dtest)
+
+  matrix(p, nrow=nrow(x_test), byrow=TRUE)
+
 }
 
 #just a comment
@@ -164,15 +156,15 @@ x_test <- mnist$test$x
 y_test <- mnist$test$y
 
 frac <- 0.1
-run_exp <- function(frac, x_train, y_train, x_test, y_test) {
+run_size_exp<- function(frac, x_train, y_train, x_test, y_test) {
 
   samples <- sample(nrow(x_train), floor(nrow(x_train) * frac), replace=FALSE)
 
-  x_train <- x_train[samples,,]
-  y_train <- y_train[samples]
+  x_t <- x_train[samples,,]
+  y_t <- y_train[samples]
 
-  args <- list(x_train = x_train,
-               y_train = y_train,
+  args <- list(x_train = x_t,
+               y_train = y_t,
                x_test = x_test,
                y_test = y_test)
 
@@ -181,21 +173,39 @@ run_exp <- function(frac, x_train, y_train, x_test, y_test) {
   preds <- experiments %>%
     map(exec, !!!args)
 
-  accs <- ova_accuracy <- function(preds, y_test)
+  # transform each matrix into a tibble, appending two
+  # new columns: pred and obs
+  tibs <- preds %>%
+    map(~ as_tibble(., .name_repair = "universal")) %>%
+    map( ~ {
+      set_colnames(.x, y_test %>% factor %>% levels %>% sort)
+    }) %>%
+    map(. %>%
+          mutate('pred' = names(.)[apply(., 1, which.max)])) %>%
+    map( ~ {
+      cbind(., obs = factor(y_test))
+    })
+
+  accs <- tibs %>%
+    map(~{pull(.,pred)}) %>%
+    map(table, y_test) %>%
+    map(diag) %>%
+    map(sum) %>%
+    map_dbl(.f = function(x){x/nrow(y_test)})
 
   tibble(frac = frac,
          exp_name = c("rf", "xgb", "dnn", "cnn"),
          acc = accs)
 }
 
-
+#tib <- c(0.05) %>%
 tib <- c(1:9 / 100, 1:9 / 10, 91:100 / 100) %>%
   sort() %>%
-  map_dfr(run_exp, x_train, y_train, x_test, y_test)
+  map_dfr(run_size_exp, x_train, y_train, x_test, y_test)
 
-tib %>% write_csv("./results.csv")
+tib %>% write_csv("./data-size-results.csv")
 
-tib <- read_csv("./results.csv")
+tib <- read_csv("./data-size-results.csv")
 
 ggplot(tib, aes(x=frac, y=acc, color=exp_name)) +
   geom_line(size=1) + geom_point(color="white", size = 0.2) +
