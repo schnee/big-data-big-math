@@ -3,6 +3,7 @@ library(xgboost)
 library(keras)
 library(randomForest)
 library(Matrix)
+library(caret)
 library(ggplot2)
 library(pROC)
 library(purrr)
@@ -184,18 +185,22 @@ run_size_exp<- function(frac, x_train, y_train, x_test, y_test) {
           mutate('pred' = names(.)[apply(., 1, which.max)])) %>%
     map( ~ {
       cbind(., obs = factor(y_test))
-    })
+    }) %>%
+    map(. %>% mutate('pred' = factor(.$pred)))
 
-  accs <- tibs %>%
-    map(~{pull(.,pred)}) %>%
-    map(table, y_test) %>%
-    map(diag) %>%
-    map(sum) %>%
-    map_dbl(.f = function(x){x/nrow(y_test)})
+  mcss <- tibs %>%
+    map(~multiClassSummary(., lev=levels(.$obs)))
+
+  accs <- mcss %>%
+    map_dbl(pluck("Accuracy"))
+
+  aucs <- mcss %>%
+    map_dbl(pluck("AUC"))
 
   tibble(frac = frac,
          exp_name = c("rf", "xgb", "dnn", "cnn"),
-         acc = accs)
+         acc = accs,
+         auc = aucs)
 }
 
 #tib <- c(0.05) %>%
