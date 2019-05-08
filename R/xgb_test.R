@@ -223,3 +223,14 @@ ggplot(tib, aes(x=frac, y=acc, color=exp_name)) +
     y = "Overall Inference Accuracy (OVA)"
   )
 
+ggplot(tib, aes(x=frac, y=auc, color=exp_name)) +
+  geom_line(size=1) + geom_point(color="white", size = 0.2) +
+  scale_color_viridis_d("Model Type") +
+  ggthemes::theme_few() +
+  labs(
+    title = "Model Architectures and Training Batch Size",
+    subtitle = "MNIST Dataset",
+    x = "Fraction of MNIST Training\n(60,000 * x = # of samples)",
+    y = "Overall AUC (OVA)"
+  )
+
