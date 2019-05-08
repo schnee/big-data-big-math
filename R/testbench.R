@@ -220,7 +220,7 @@ ggplot(tib, aes(x=frac, y=acc, color=exp_name)) +
     title = "Model Architectures and Training Batch Size",
     subtitle = "MNIST Dataset",
     x = "Fraction of MNIST Training\n(60,000 * x = # of samples)",
-    y = "Overall Inference Accuracy (OVA)"
+    y = "Inference Accuracy (OVA)"
   )
 
 ggplot(tib, aes(x=frac, y=auc, color=exp_name)) +
@@ -231,6 +231,6 @@ ggplot(tib, aes(x=frac, y=auc, color=exp_name)) +
     title = "Model Architectures and Training Batch Size",
     subtitle = "MNIST Dataset",
     x = "Fraction of MNIST Training\n(60,000 * x = # of samples)",
-    y = "Overall AUC (OVA)"
+    y = "AUC (OVA)"
   )
 
