@@ -150,7 +150,7 @@ ova_accuracy <- function(preds, y_test) {
     map_dbl(divide_by, nrow(y_test))
 }
 
-mnist <- keras::dataset_mnist()
+mnist <- keras::dataset_fashion_mnist()
 x_train <- mnist$train$x
 y_train <- mnist$train$y
 x_test <- mnist$test$x
@@ -188,6 +188,8 @@ run_size_exp<- function(frac, x_train, y_train, x_test, y_test) {
     }) %>%
     map(. %>% mutate('pred' = factor(.$pred)))
 
+  tibs %>% saveRDS(file="./tibs.RDS")
+
   mcss <- tibs %>%
     map(~multiClassSummary(., lev=levels(.$obs)))
 
@@ -208,9 +210,9 @@ tib <- c(1:9 / 100, 1:9 / 10, 91:100 / 100) %>%
   sort() %>%
   map_dfr(run_size_exp, x_train, y_train, x_test, y_test)
 
-tib %>% write_csv("./data-size-results.csv")
+tib %>% write_csv("./fashion-data-size-results.csv")
 
-tib <- read_csv("./data-size-results.csv")
+tib <- read_csv("./fashion-data-size-results.csv")
 
 ggplot(tib, aes(x=frac, y=acc, color=exp_name)) +
   geom_line(size=1) + geom_point(color="white", size = 0.2) +
