@@ -15,8 +15,8 @@ y_train <- mnist$train$y
 x_test <- mnist$test$x
 y_test <- mnist$test$y
 
-damage_tib <- c(0.01) %>%
-  #damage_tib <- c(0:10 / 100, 0.2, 0.3) %>%
+#damage_tib <- c(0.01) %>%
+damage_tib <- c(0:9 / 100, 1:5 / 10) %>%
   sort() %>%
   map_dfr(run_damage_exp, x_train, y_train, x_test, y_test)
 
@@ -28,10 +28,22 @@ ggplot(damage_tib, aes(x=frac, y=acc, color=exp_name)) +
   geom_line(size=1) + geom_point(color="white", size = 0.2) +
   scale_color_viridis_d("Model Type") +
   ggthemes::theme_few() +
+  scale_x_continuous(labels = scales::percent) +
   labs(
-    title = "Model Architectures and Training Batch Size",
+    title = "Model Architectures and Mis-labeled Data",
     subtitle = "Fashion MNIST Dataset",
-    x = "Fraction of Training\n(60,000 * x = # of samples)",
-    y = "AUC (OVA)"
+    x = "Mis-labeled training data\n(percent of 60,000 obs)",
+    y = "Accuracy (OVA)"
   )
 
+ggplot(damage_tib, aes(x=frac, y=auc, color=exp_name)) +
+  geom_line(size=1) + geom_point(color="white", size = 0.2) +
+  scale_color_viridis_d("Model Type") +
+  ggthemes::theme_few() +
+  scale_x_continuous(labels = scales::percent) +
+  labs(
+    title = "Model Architectures and Mis-labeled Data",
+    subtitle = "Fashion MNIST Dataset",
+    x = "Mis-labeled training data\n(percent of 60,000 obs)",
+    y = "AUC (OVA)"
+  )
