@@ -32,8 +32,8 @@ ggplot(tib, aes(x=frac, y=acc, color=exp_name)) +
   ggthemes::theme_few() +
   labs(
     title = "Model Architectures and Training Batch Size",
-    subtitle = "MNIST Dataset",
-    x = "Fraction of MNIST Training\n(60,000 * x = # of samples)",
+    subtitle = "Fashion MNIST Dataset",
+    x = "Fraction of Training Data\n(60,000 * x = # of samples)",
     y = "Inference Accuracy (OVA)"
   )
 
@@ -43,7 +43,7 @@ ggplot(tib, aes(x=frac, y=auc, color=exp_name)) +
    ggthemes::theme_few() +
    labs(
      title = "Model Architectures and Training Batch Size",
-     subtitle = "MNIST Dataset",
-     x = "Fraction of MNIST Training\n(60,000 * x = # of samples)",
+     subtitle = "Fashion MNIST Dataset",
+     x = "Fraction of Training Training\n(60,000 * x = # of samples)",
      y = "AUC (OVA)"
    )
