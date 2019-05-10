@@ -1,0 +1,37 @@
+
+library(keras)
+library(ggplot2)
+library(purrr)
+library(readr)
+library(tibble)
+library(dplyr)
+library(magrittr)
+
+devtools::load_all(here::here("packages/testbench"))
+
+mnist <- keras::dataset_fashion_mnist()
+x_train <- mnist$train$x
+y_train <- mnist$train$y
+x_test <- mnist$test$x
+y_test <- mnist$test$y
+
+damage_tib <- c(0.01) %>%
+  #damage_tib <- c(0:10 / 100, 0.2, 0.3) %>%
+  sort() %>%
+  map_dfr(run_damage_exp, x_train, y_train, x_test, y_test)
+
+damage_tib %>% write_csv("fashion-mnist-damage-results.csv")
+
+damage_tib <- read_csv("fashion-mnist-damage-results.csv")
+
+ggplot(damage_tib, aes(x=frac, y=acc, color=exp_name)) +
+  geom_line(size=1) + geom_point(color="white", size = 0.2) +
+  scale_color_viridis_d("Model Type") +
+  ggthemes::theme_few() +
+  labs(
+    title = "Model Architectures and Training Batch Size",
+    subtitle = "Fashion MNIST Dataset",
+    x = "Fraction of Training\n(60,000 * x = # of samples)",
+    y = "AUC (OVA)"
+  )
+
