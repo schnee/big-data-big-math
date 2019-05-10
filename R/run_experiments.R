@@ -205,34 +205,122 @@ run_size_exp<- function(frac, x_train, y_train, x_test, y_test) {
          auc = aucs)
 }
 
+apply_damage <- function(damage_fraction, the_vector_to_damage) {
+
+  bad_labels <- the_vector_to_damage %>%
+    enframe() %>%
+    group_by(value) %>%
+    sample_frac(damage_fraction) %>%
+    ungroup() %>%
+    mutate(value = value + sample(1:9, nrow(.), replace=TRUE)) %>%
+    mutate(value = value %% 10)
+
+  the_vector_to_damage %>%
+    enframe() %>%
+    filter(!(name %in% bad_labels$name)) %>%
+    bind_rows(bad_labels) %>%
+    arrange(name) %>%
+    pull(value)
+
+}
+
+run_damage_exp<- function(frac, x_train, y_train, x_test, y_test) {
+
+  x_t <- x_train
+  y_t <- y_train
+
+  y_t <- apply_damage(frac, y_t)
+
+  args <- list(x_train = x_t,
+               y_train = y_t,
+               x_test = x_test,
+               y_test = y_test)
+
+  experiments <- c(rf_exp, xgb_exp, dnn_exp, cnn_exp)
+
+  preds <- experiments %>%
+    map(exec, !!!args)
+
+  # transform each matrix into a tibble, appending two
+  # new columns: pred and obs
+  tibs <- preds %>%
+    map(~ as_tibble(., .name_repair = "universal")) %>%
+    map( ~ {
+      set_colnames(.x, y_test %>% factor %>% levels %>% sort)
+    }) %>%
+    map(. %>%
+          mutate('pred' = names(.)[apply(., 1, which.max)])) %>%
+    map( ~ {
+      cbind(., obs = factor(y_test))
+    }) %>%
+    map(. %>% mutate('pred' = factor(.$pred)))
+
+  tibs %>% saveRDS(file="./tibs.RDS")
+
+  mcss <- tibs %>%
+    map(~multiClassSummary(., lev=levels(.$obs)))
+
+  accs <- mcss %>%
+    map_dbl(pluck("Accuracy"))
+
+  aucs <- mcss %>%
+    map_dbl(pluck("AUC"))
+
+  tibble(frac = frac,
+         exp_name = c("rf", "xgb", "dnn", "cnn"),
+         acc = accs,
+         auc = aucs)
+}
+
+
 #tib <- c(0.05) %>%
-tib <- c(1:9 / 100, 1:9 / 10, 91:100 / 100) %>%
+# tib <- c(1:9 / 100, 1:9 / 10, 91:100 / 100) %>%
+#   sort() %>%
+#   map_dfr(run_size_exp, x_train, y_train, x_test, y_test)
+#
+# tib %>% write_csv("./fashion-data-size-results.csv")
+#
+# tib <- read_csv("./fashion-data-size-results.csv")
+#
+# ggplot(tib, aes(x=frac, y=acc, color=exp_name)) +
+#   geom_line(size=1) + geom_point(color="white", size = 0.2) +
+#   scale_color_viridis_d("Model Type") +
+#   ggthemes::theme_few() +
+#   labs(
+#     title = "Model Architectures and Training Batch Size",
+#     subtitle = "MNIST Dataset",
+#     x = "Fraction of MNIST Training\n(60,000 * x = # of samples)",
+#     y = "Inference Accuracy (OVA)"
+#   )
+#
+# ggplot(tib, aes(x=frac, y=auc, color=exp_name)) +
+#   geom_line(size=1) + geom_point(color="white", size = 0.2) +
+#   scale_color_viridis_d("Model Type") +
+#   ggthemes::theme_few() +
+#   labs(
+#     title = "Model Architectures and Training Batch Size",
+#     subtitle = "MNIST Dataset",
+#     x = "Fraction of MNIST Training\n(60,000 * x = # of samples)",
+#     y = "AUC (OVA)"
+#   )
+
+
+damage_tib <- c(0:10 / 100, 0.2, 0.3) %>%
   sort() %>%
-  map_dfr(run_size_exp, x_train, y_train, x_test, y_test)
+  map_dfr(run_damage_exp, x_train, y_train, x_test, y_test)
 
-tib %>% write_csv("./fashion-data-size-results.csv")
+damage_tib %>% write_csv("fashion-mnist-damage-results.csv")
 
-tib <- read_csv("./fashion-data-size-results.csv")
+damage_tib <- read_csv("fashion-mnist-damage-results.csv")
 
-ggplot(tib, aes(x=frac, y=acc, color=exp_name)) +
+ggplot(damage_tib, aes(x=frac, y=acc, color=exp_name)) +
   geom_line(size=1) + geom_point(color="white", size = 0.2) +
   scale_color_viridis_d("Model Type") +
   ggthemes::theme_few() +
   labs(
     title = "Model Architectures and Training Batch Size",
-    subtitle = "MNIST Dataset",
-    x = "Fraction of MNIST Training\n(60,000 * x = # of samples)",
-    y = "Inference Accuracy (OVA)"
-  )
-
-ggplot(tib, aes(x=frac, y=auc, color=exp_name)) +
-  geom_line(size=1) + geom_point(color="white", size = 0.2) +
-  scale_color_viridis_d("Model Type") +
-  ggthemes::theme_few() +
-  labs(
-    title = "Model Architectures and Training Batch Size",
-    subtitle = "MNIST Dataset",
-    x = "Fraction of MNIST Training\n(60,000 * x = # of samples)",
+    subtitle = "Fashion MNIST Dataset",
+    x = "Fraction of Training\n(60,000 * x = # of samples)",
     y = "AUC (OVA)"
   )
 
