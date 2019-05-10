@@ -26,7 +26,7 @@ damage_tib <- read_csv("fashion-mnist-damage-results.csv")
 
 ggplot(damage_tib, aes(x=frac, y=acc, color=exp_name)) +
   geom_line(size=1) + geom_point(color="white", size = 0.2) +
-  scale_color_viridis_d("Model Type") +
+  ggthemes::scale_color_few("Model Type", palette = "Dark") +
   ggthemes::theme_few() +
   scale_x_continuous(labels = scales::percent) +
   labs(
@@ -38,7 +38,7 @@ ggplot(damage_tib, aes(x=frac, y=acc, color=exp_name)) +
 
 ggplot(damage_tib, aes(x=frac, y=auc, color=exp_name)) +
   geom_line(size=1) + geom_point(color="white", size = 0.2) +
-  scale_color_viridis_d("Model Type") +
+  ggthemes::scale_color_few("Model Type", palette = "Dark") +
   ggthemes::theme_few() +
   scale_x_continuous(labels = scales::percent) +
   labs(
