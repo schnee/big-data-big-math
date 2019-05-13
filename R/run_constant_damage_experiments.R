@@ -47,3 +47,4 @@ ggplot(damage_tib, aes(x=frac, y=auc, color=exp_name)) +
     x = "Mis-labeled training data\n(percent of 60,000 obs)",
     y = "AUC (OVA)"
   )
+
