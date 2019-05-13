@@ -197,7 +197,7 @@ run_size_exp<- function(frac, x_train, y_train, x_test, y_test) {
          auc = aucs)
 }
 
-apply_damage <- function(damage_fraction, the_vector_to_damage) {
+apply_random_damage <- function(damage_fraction, the_vector_to_damage) {
 
   bad_labels <- the_vector_to_damage %>%
     enframe() %>%
@@ -216,12 +216,77 @@ apply_damage <- function(damage_fraction, the_vector_to_damage) {
 
 }
 
-run_damage_exp<- function(frac, x_train, y_train, x_test, y_test) {
+run_random_damage_exp<- function(frac, x_train, y_train, x_test, y_test) {
 
   x_t <- x_train
   y_t <- y_train
 
-  y_t <- apply_damage(frac, y_t)
+  y_t <- apply_random_damage(frac, y_t)
+
+  args <- list(x_train = x_t,
+               y_train = y_t,
+               x_test = x_test,
+               y_test = y_test)
+
+  experiments <- c(rf_exp, xgb_exp, dnn_exp, cnn_exp)
+
+  preds <- experiments %>%
+    map(exec, !!!args)
+
+  # transform each matrix into a tibble, appending two
+  # new columns: pred and obs
+  tibs <- preds %>%
+    map(~ as_tibble(., .name_repair = "universal")) %>%
+    map( ~ {
+      set_colnames(.x, y_test %>% factor %>% levels %>% sort)
+    }) %>%
+    map(. %>%
+          mutate('pred' = names(.)[apply(., 1, which.max)])) %>%
+    map( ~ {
+      cbind(., obs = factor(y_test))
+    }) %>%
+    map(. %>% mutate('pred' = factor(.$pred)))
+
+  mcss <- tibs %>%
+    map(~multiClassSummary(., lev=levels(.$obs)))
+
+  accs <- mcss %>%
+    map_dbl(pluck("Accuracy"))
+
+  aucs <- mcss %>%
+    map_dbl(pluck("AUC"))
+
+  tibble(frac = frac,
+         exp_name = c("rf", "xgb", "dnn", "cnn"),
+         acc = accs,
+         auc = aucs)
+}
+
+apply_constant_damage <- function(damage_fraction, the_vector_to_damage) {
+
+  bad_labels <- the_vector_to_damage %>%
+    enframe() %>%
+    group_by(value) %>%
+    sample_frac(damage_fraction) %>%
+    ungroup() %>%
+    mutate(value = value + 1) %>%
+    mutate(value = value %% 10)
+
+  the_vector_to_damage %>%
+    enframe() %>%
+    filter(!(name %in% bad_labels$name)) %>%
+    bind_rows(bad_labels) %>%
+    arrange(name) %>%
+    pull(value)
+
+}
+
+run_constant_damage_exp<- function(frac, x_train, y_train, x_test, y_test) {
+
+  x_t <- x_train
+  y_t <- y_train
+
+  y_t <- apply_constant_damage(frac, y_t)
 
   args <- list(x_train = x_t,
                y_train = y_t,
