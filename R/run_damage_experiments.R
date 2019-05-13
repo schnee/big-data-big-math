@@ -18,7 +18,7 @@ y_test <- mnist$test$y
 #damage_tib <- c(0.01) %>%
 damage_tib <- c(0:9 / 100, 1:5 / 10) %>%
   sort() %>%
-  map_dfr(run_damage_exp, x_train, y_train, x_test, y_test)
+  map_dfr(run_random_damage_exp, x_train, y_train, x_test, y_test)
 
 damage_tib %>% write_csv("fashion-mnist-damage-results.csv")
 
