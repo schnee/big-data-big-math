@@ -35,7 +35,7 @@ ggplot(tib, aes(x=frac, y=acc, color=exp_name)) +
     subtitle = "Fashion MNIST Dataset",
     x = "Fraction of Training Data\n(60,000 * x = # of samples)",
     y = "Inference Accuracy (OVA)"
-  )
+  ) + coord_cartesian(ylim=c(0.4,1))
 
 ggplot(tib, aes(x=frac, y=auc, color=exp_name)) +
    geom_line(size=1) + geom_point(color="white", size = 0.2) +
@@ -46,4 +46,4 @@ ggplot(tib, aes(x=frac, y=auc, color=exp_name)) +
      subtitle = "Fashion MNIST Dataset",
      x = "Fraction of Training Data\n(60,000 * x = # of samples)",
      y = "AUC (OVA)"
-   )
+   ) + coord_cartesian(ylim=c(0.75,1))
