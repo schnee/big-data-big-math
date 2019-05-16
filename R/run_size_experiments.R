@@ -35,7 +35,7 @@ ggplot(tib, aes(x=frac, y=acc, color=exp_name)) +
     subtitle = "Fashion MNIST Dataset",
     x = "Fraction of Training Data\n(60,000 * x = # of samples)",
     y = "Inference Accuracy (OVA)"
-  ) + coord_cartesian(ylim=c(0.4,1))
+  )
 
 ggsave(filename=here::here("plot/acc-size.png"), width = 12, height =7, dpi=200)
 
@@ -48,6 +48,6 @@ ggplot(tib, aes(x=frac, y=auc, color=exp_name)) +
      subtitle = "Fashion MNIST Dataset",
      x = "Fraction of Training Data\n(60,000 * x = # of samples)",
      y = "AUC (OVA)"
-   ) + coord_cartesian(ylim=c(0.75,1))
+   )
 
 ggsave(filename=here::here("plot/auc-size.png"), width = 12, height =7, dpi=200)
