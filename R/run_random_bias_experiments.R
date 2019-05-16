@@ -47,7 +47,7 @@ ggplot(damage_tib, aes(x=unbiased, y=auc, color=exp_name)) +
   labs(
     title = "Model Architectures and Random Bias",
     subtitle = "Fashion MNIST Dataset",
-    x = "Mis-labeled training data\n(percent of 60,000 obs)",
+    x = "Correctly labeled training data\n(percent of 60,000 obs)",
     y = "AUC (OVA)"
   ) + coord_cartesian(ylim=c(0.75,1))
 
