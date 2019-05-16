@@ -22,9 +22,10 @@ damage_tib <- c(0:9 / 100, 1:5 / 10) %>%
 
 damage_tib %>% write_csv("fashion-mnist-damage-results.csv")
 
-damage_tib <- read_csv("fashion-mnist-damage-results.csv")
+damage_tib <- read_csv("fashion-mnist-damage-results.csv") %>%
+  mutate(unbiased = 1-frac)
 
-ggplot(damage_tib, aes(x=frac, y=acc, color=exp_name)) +
+ggplot(damage_tib, aes(x=unbiased, y=acc, color=exp_name)) +
   geom_line(size=1) + geom_point(color="white", size = 0.2) +
   ggthemes::scale_color_few("Model Type", palette = "Dark") +
   ggthemes::theme_few() +
@@ -32,11 +33,11 @@ ggplot(damage_tib, aes(x=frac, y=acc, color=exp_name)) +
   labs(
     title = "Model Architectures and Random Bias",
     subtitle = "Fashion MNIST Dataset",
-    x = "Mis-labeled training data\n(percent of 60,000 obs)",
+    x = "Correctly labeled training data\n(percent of 60,000 obs)",
     y = "Accuracy (OVA)"
   ) + coord_cartesian(ylim=c(0.4,1))
 
-ggplot(damage_tib, aes(x=frac, y=auc, color=exp_name)) +
+ggplot(damage_tib, aes(x=unbiased, y=auc, color=exp_name)) +
   geom_line(size=1) + geom_point(color="white", size = 0.2) +
   ggthemes::scale_color_few("Model Type", palette = "Dark") +
   ggthemes::theme_few() +
