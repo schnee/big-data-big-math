@@ -16,7 +16,7 @@ x_test <- mnist$test$x
 y_test <- mnist$test$y
 
 #damage_tib <- c(0.01) %>%
-damage_tib <- c(0:9 / 100, 1:5 / 10) %>%
+damage_tib <- c(0:9 / 100, 1:9 / 10, 91:99 / 100) %>%
   sort() %>%
   map_dfr(run_random_damage_exp, x_train, y_train, x_test, y_test)
 
@@ -35,7 +35,7 @@ ggplot(damage_tib, aes(x=unbiased, y=acc, color=exp_name)) +
     subtitle = "Fashion MNIST Dataset",
     x = "Correctly labeled training data\n(percent of 60,000 obs)",
     y = "Accuracy (OVA)"
-  ) + coord_cartesian(ylim=c(0.4,1))
+  )
 
 ggsave(filename=here::here("plot/acc-rand-bias.png"), width = 12, height =7, dpi=200)
 
@@ -49,6 +49,6 @@ ggplot(damage_tib, aes(x=unbiased, y=auc, color=exp_name)) +
     subtitle = "Fashion MNIST Dataset",
     x = "Correctly labeled training data\n(percent of 60,000 obs)",
     y = "AUC (OVA)"
-  ) + coord_cartesian(ylim=c(0.75,1))
+  )
 
 ggsave(filename=here::here("plot/auc-rand-bias.png"), width = 12, height =7, dpi=200)

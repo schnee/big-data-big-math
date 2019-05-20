@@ -153,20 +153,20 @@ ova_accuracy <- function(preds, y_test) {
 
 run_size_exp<- function(frac, x_train, y_train, x_test, y_test) {
 
-  samples <- sample(nrow(x_train), floor(nrow(x_train) * frac), replace=FALSE)
+  samples <- sample(nrow(x_train), floor(nrow(x_train) * frac), replace=FALSE) - 1
 
   x_t <- x_train[samples,,]
   y_t <- y_train[samples]
 
-  args <- list(x_train = x_t,
+  data <- list(x_train = x_t,
                y_train = y_t,
                x_test = x_test,
                y_test = y_test)
 
-  experiments <- c(rf_exp, xgb_exp, dnn_exp, cnn_exp)
+  math <- c(rf_exp, xgb_exp, dnn_exp, cnn_exp)
 
-  preds <- experiments %>%
-    map(exec, !!!args)
+  preds <- math %>%
+    map(exec, !!!data)
 
   # transform each matrix into a tibble, appending two
   # new columns: pred and obs
