@@ -51,7 +51,8 @@ blank <- tibble(damaged = c(0:9),
 
 random_damage(0.3, y_train) %>%
   filter(value == 5) %>%
-  group_by(damaged) %>% tally() %>%
+  group_by(damaged) %>% tally() %>% bind_rows(blank) %>%
+  group_by(damaged) %>% summarize(n=sum(n)) %>%
   ggplot(aes(x=factor(damaged), y = n)) + geom_col() +
   ggthemes::theme_few() +
   geom_label(aes(label = n)) +
@@ -73,7 +74,8 @@ ggsave(
 
 const_damage(0.3, y_train) %>%
   filter(value == 5) %>%
-  group_by(damaged) %>% tally()  %>%
+  group_by(damaged) %>% tally()  %>% bind_rows(blank) %>%
+  group_by(damaged) %>% summarize(n=sum(n)) %>%
   ggplot(aes(x=factor(damaged), y = n)) + geom_col() +
   ggthemes::theme_few() +
   geom_label(aes(label = n)) +
