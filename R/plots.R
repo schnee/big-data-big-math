@@ -20,7 +20,7 @@ make_mnist_df <- function(the_index) {
 
 
 
-mnist <- keras::dataset_fashion_mnist()
+mnist <- keras::dataset_mnist()
 
 the_index <- mnist$test$y %>% enframe() %>% group_by(value) %>%
   sample_n(20) %>% ungroup() %>% pull(name)
@@ -41,8 +41,8 @@ ggplot(dfs, aes(x, y)) +
   theme(legend.position = "none") + theme(strip.background = element_blank(),
                                           strip.text.x = element_blank())
 ggsave(
-  here::here("plot/normal-fashion-data.png"),
-  width = 16,
-  height = 8,
-  dpi = 200
+  here::here("plot/normal-digits-data.png"),
+  width = 16 * (2/3),
+  height = 9 * (2/3),
+  dpi = 300
 )
