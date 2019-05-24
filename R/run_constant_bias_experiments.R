@@ -37,7 +37,9 @@ ggplot(damage_tib, aes(x=unbiased, y=acc, color=exp_name)) +
     y = "Accuracy (OVA)"
   )
 
-ggsave(filename=here::here("plot/acc-const-bias.png"), width = 12, height =7, dpi=200)
+ggsave(filename=here::here("plot/acc-const-bias.png"),   width = 16 * (2/3),
+       height = 9 * (2/3),
+       dpi = 300)
 
 ggplot(damage_tib, aes(x=unbiased, y=auc, color=exp_name)) +
   geom_line(size=1) + geom_point(color="white", size = 0.2) +
@@ -51,4 +53,6 @@ ggplot(damage_tib, aes(x=unbiased, y=auc, color=exp_name)) +
     y = "AUC (OVA)"
   )
 
-ggsave(filename=here::here("plot/auc-const-bias.png"), width = 12, height =7, dpi=200)
+ggsave(filename=here::here("plot/auc-const-bias.png"), width = 16 * (2/3),
+       height = 9 * (2/3),
+       dpi = 300)
