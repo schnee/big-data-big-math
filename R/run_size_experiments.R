@@ -37,8 +37,9 @@ ggplot(tib, aes(x=frac, y=acc, color=exp_name)) +
     y = "Inference Accuracy (OVA)"
   )
 
-ggsave(filename=here::here("plot/acc-size.png"), width = 16 * (2/3),
-       height = 9 * (2/3),
+ggsave(filename=here::here("plot/acc-size.png"),
+       width = 16 * (1/3),
+       height = 9 * (1/3),
        dpi = 300)
 
 ggplot(tib, aes(x=frac, y=auc, color=exp_name)) +
@@ -52,6 +53,7 @@ ggplot(tib, aes(x=frac, y=auc, color=exp_name)) +
      y = "AUC (OVA)"
    )
 
-ggsave(filename=here::here("plot/auc-size.png"), width = 16 * (2/3),
-       height = 9 * (2/3),
+ggsave(filename=here::here("plot/auc-size.png"),
+       width = 16 * (1/3),
+       height = 9 * (1/3),
        dpi = 300)

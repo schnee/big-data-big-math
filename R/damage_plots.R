@@ -66,8 +66,8 @@ random_damage(0.3, y_train) %>%
 
 ggsave(
   here::here("plot/random-bias.png"),
-  width = 16 * (2/3),
-  height = 9 * (2/3),
+  width = 16 * (1/3),
+  height = 9 * (1/3),
   dpi = 300
 )
 
@@ -89,8 +89,8 @@ const_damage(0.3, y_train) %>%
 
 ggsave(
   here::here("plot/constant-bias.png"),
-  width = 16 * (2/3),
-  height = 9 * (2/3),
+  width = 16 * (1/3),
+  height = 9 * (1/3),
   dpi = 300
 )
 
