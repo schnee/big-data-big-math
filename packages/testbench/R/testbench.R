@@ -327,3 +327,65 @@ run_constant_damage_exp<- function(frac, x_train, y_train, x_test, y_test) {
          auc = aucs)
 }
 
+sample_training <- function(frac_of_samples, x_train, y_train){
+
+  samples <- sample(nrow(x_train), floor(nrow(x_train) * frac_of_samples), replace=FALSE) - 1
+
+  x_t <- x_train[samples,,]
+  y_t <- y_train[samples]
+
+  list(x = x_t,
+       y = y_t)
+}
+
+run_cnn_damage_exp<- function(frac_damage, frac_sample, x_train, y_train, x_test, y_test) {
+
+  x_t <- x_train
+  y_t <- y_train
+
+  samples <- sample_training(frac_sample, x_train, y_train)
+
+  x_t <- samples$x
+  y_t <- samples$y
+
+  y_t <- apply_constant_damage(frac_damage, y_t)
+
+  args <- list(x_train = x_t,
+               y_train = y_t,
+               x_test = x_test,
+               y_test = y_test)
+
+  experiments <- c(cnn_exp)
+
+  preds <- experiments %>%
+    map(exec, !!!args)
+
+  # transform each matrix into a tibble, appending two
+  # new columns: pred and obs
+  tibs <- preds %>%
+    map(~ as_tibble(., .name_repair = "universal")) %>%
+    map( ~ {
+      set_colnames(.x, y_test %>% factor %>% levels %>% sort)
+    }) %>%
+    map(. %>%
+          mutate('pred' = names(.)[apply(., 1, which.max)])) %>%
+    map( ~ {
+      cbind(., obs = factor(y_test))
+    }) %>%
+    map(. %>% mutate('pred' = factor(.$pred)))
+
+  mcss <- tibs %>%
+    map(~multiClassSummary(., lev=levels(.$obs)))
+
+  accs <- mcss %>%
+    map_dbl(pluck("Accuracy"))
+
+  aucs <- mcss %>%
+    map_dbl(pluck("AUC"))
+
+  tibble(frac_damage = frac_damage,
+    frac_sample = frac_sample,
+         exp_name = c("cnn"),
+         acc = accs,
+         auc = aucs)
+}
