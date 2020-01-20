@@ -16,7 +16,6 @@ x_test <- mnist$test$x
 y_test <- mnist$test$y
 
 damage_frac <- c(0:5 / 10) %>%
-#damage_frac <- c(0:9 / 100, 1:9 / 10, 91:99 / 100) %>%
   sort()
 
 sample_frac <- c(1:9/100, 1:9 / 10, 91:100 / 100) %>%
