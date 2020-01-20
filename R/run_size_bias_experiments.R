@@ -19,48 +19,50 @@ damage_frac <- c(0:5 / 10) %>%
 #damage_frac <- c(0:9 / 100, 1:9 / 10, 91:99 / 100) %>%
   sort()
 
-sample_frac <- c(1:10 / 10) %>%
-#sample_frac <- c(0:9 / 100, 1:9 / 10, 91:99 / 100) %>%
+sample_frac <- c(1:9/100, 1:9 / 10, 91:100 / 100) %>%
   sort()
 
+cross_prod <- cross_df(list(d=damage_frac, s=sample_frac))
+
 results_tib <-
-  map2_dfr(damage_frac, sample_frac, run_cnn_damage_exp, x_train, y_train, x_test, y_test)
+  map2_dfr(cross_prod$d, cross_prod$s, run_cnn_damage_exp, x_train, y_train, x_test, y_test)
 
-damage_tib %>% write_csv("fashion-mnist-size_damage-results.csv")
+results_tib %>% write_csv("fashion-mnist-size_damage-results.csv")
 
-damage_tib <- read_csv("fashion-mnist-size_damage-results.csv") %>%
-  mutate(unbiased = 1-frac)
+results_tib <- read_csv("fashion-mnist-size_damage-results.csv") %>%
+  mutate(unbiased = 1-frac_damage,
+         frac_damage = as.factor(frac_damage))
 
-ggplot(damage_tib, aes(x=unbiased, y=acc, color=exp_name)) +
+ggplot(results_tib, aes(x=frac_sample, y=acc, color=frac_damage, group=frac_damage)) +
   geom_line(size=1) + geom_point(color="white", size = 0.2) +
-  ggthemes::scale_color_few("Model Type", palette = "Dark") +
+  ggthemes::scale_color_few("Bias Fraction", palette = "Dark") +
   ggthemes::theme_few() +
   scale_x_continuous(labels = scales::percent) +
   labs(
-    title = "Model Architectures and Constant Bias",
+    title = "CNN Architecture and Bias",
     subtitle = "Fashion MNIST Dataset",
-    x = "Correctly labeled training data\n(percent of 60,000 obs)",
+    x = "Number of Samples\n(percent of 60,000 obs)",
     y = "Accuracy (OVA)"
   )
 
-ggsave(filename=here::here("plot/acc-const-bias.png"),
+ggsave(filename=here::here("plot/acc-cnn-bias.png"),
        width = 16 * (1/3),
        height = 9 * (1/3),
        dpi = 300)
 
-ggplot(damage_tib, aes(x=unbiased, y=auc, color=exp_name)) +
+ggplot(results_tib, aes(x=frac_sample, y=auc, color=frac_damage, group=frac_damage)) +
   geom_line(size=1) + geom_point(color="white", size = 0.2) +
-  ggthemes::scale_color_few("Model Type", palette = "Dark") +
+  ggthemes::scale_color_few("Bias Fraction", palette = "Dark") +
   ggthemes::theme_few() +
   scale_x_continuous(labels = scales::percent) +
   labs(
-    title = "Model Architectures and Constant Bias",
+    title = "CNN Architecture and Bias",
     subtitle = "Fashion MNIST Dataset",
-    x = "Correctly labeled training data\n(percent of 60,000 obs)",
+    x = "Number of Samples\n(percent of 60,000 obs)",
     y = "AUC (OVA)"
   )
 
-ggsave(filename=here::here("plot/auc-const-bias.png"),
+ggsave(filename=here::here("plot/auc-cnn-bias.png"),
        width = 16 * (1/3),
        height = 9 * (1/3),
        dpi = 300)
