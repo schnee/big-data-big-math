@@ -65,3 +65,11 @@ ggsave(filename=here::here("plot/auc-cnn-bias.png"),
        width = 16 * (1/3),
        height = 9 * (1/3),
        dpi = 300)
+
+results_tib %>%
+  filter(acc > .90) %>%
+  group_by(unbiased) %>%
+  top_n(1, -acc) %>% ungroup() %>%
+  mutate(num_obs = frac_sample * 60000) %>%
+  mutate(delta = round((num_obs - lag(num_obs)) / lag(num_obs), digits=2)) %>%
+  select(unbiased, acc, frac_sample, num_obs, delta) %>% knitr::kable()
